@@ -1,0 +1,10 @@
+name: "TNLProtect"
+main: "net.nonswag.tnl.protect.Protect"
+version: "1.0"
+api-version: "1.13"
+author: "NonSwag"
+website: "https://www.thenextlvl.net"
+depend: ["TNLListener", "WorldEdit"]
+softdepend: ["TNLWorlds"]
+commands:
+  area:
