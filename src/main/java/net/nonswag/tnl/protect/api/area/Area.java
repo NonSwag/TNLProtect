@@ -9,6 +9,7 @@ import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
@@ -16,11 +17,13 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import net.nonswag.tnl.listener.TNLListener;
 import net.nonswag.tnl.listener.api.config.JsonConfig;
 import net.nonswag.tnl.listener.api.file.FileHelper;
 import net.nonswag.tnl.listener.api.logger.Logger;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.listener.types.BlockLocation;
+import net.nonswag.tnl.protect.api.event.AreaCreateEvent;
 import net.nonswag.tnl.protect.api.event.AreaDeleteEvent;
 import net.nonswag.tnl.protect.api.event.AreaSchematicDeleteEvent;
 import org.bukkit.Bukkit;
@@ -57,18 +60,24 @@ public class Area {
     private final Schematic schematic;
     @Nonnull
     private ActionEvent action = (player, type) -> {
-        if (player.getPermissionManager().hasPermission("tnl.admin")) return true;
+        if ((player.getGamemode().isCreative() || player.getGamemode().isSpectator()) &&
+                player.getPermissionManager().hasPermission("tnl.admin")) return true;
+        else if (type.equals(ActionEvent.Type.INTERACT) &&
+                player.getItemInHand().getType().isEdible() &&
+                player.getFoodLevel() < 20) return true;
         else return type.isAllowed();
     };
     private int priority = 0;
     private boolean globalArea = false;
 
     private Area(@Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2, @Nonnull String name) throws IllegalArgumentException {
-        this.region = new CuboidRegion(new BukkitWorld(world), pos1, pos2);
         this.name = name;
         this.world = world;
-        this.pos1 = pos1;
-        this.pos2 = pos2;
+        if (pos1.getY() <= 0) this.pos1 = pos1.withY(1);
+        else this.pos1 = pos1;
+        if (pos2.getY() <= 0) this.pos2 = pos2.withY(1);
+        else this.pos2 = pos2;
+        this.region = new CuboidRegion(new BukkitWorld(world), getPos1(), getPos2());
         this.schematic = new Schematic();
     }
 
@@ -193,6 +202,15 @@ public class Area {
         return this;
     }
 
+    @Nonnull
+    public List<TNLPlayer> getPlayers() {
+        List<TNLPlayer> players = new ArrayList<>();
+        for (TNLPlayer all : TNLListener.getInstance().getOnlinePlayers()) {
+            if (equals(highestArea(all))) players.add(all);
+        }
+        return players;
+    }
+
     public class Schematic {
 
         @Nonnull
@@ -218,7 +236,7 @@ public class Area {
                 editSession.flushQueue();
                 return true;
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.error.println(e);
             }
             return false;
         }
@@ -239,13 +257,24 @@ public class Area {
                     return true;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.error.println(e);
             }
             return false;
         }
 
+        @Nullable
+        public Clipboard getSchematic() {
+            try (ClipboardReader reader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(new FileInputStream(getFile()))) {
+                return reader.read();
+            } catch (IOException e) {
+                Logger.error.println(e);
+            }
+            return null;
+        }
+
         public boolean delete() {
-            if (file.exists() && new AreaSchematicDeleteEvent(Area.this).call()) {
+            if (!file.exists()) return true;
+            if (new AreaSchematicDeleteEvent(Area.this).call()) {
                 FileHelper.deleteDirectory(file);
                 return true;
             } else return false;
@@ -352,7 +381,7 @@ public class Area {
     }
 
     @Nonnull
-    public static Area load(@Nonnull String name) throws RuntimeException {
+    public static Area load(@Nonnull String name) throws NullPointerException {
         if (!exists(name)) throw new NullPointerException("Region not found");
         JsonObject root = getConfiguration().getJsonElement().getAsJsonObject();
         JsonObject area = root.getAsJsonObject(name);
@@ -391,6 +420,7 @@ public class Area {
     public static Area create(@Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2, @Nonnull String name) {
         Area area = new Area(world, pos1, pos2, name);
         getAreas().put(area.getName(), area);
+        new AreaCreateEvent(area).call();
         return area;
     }
 

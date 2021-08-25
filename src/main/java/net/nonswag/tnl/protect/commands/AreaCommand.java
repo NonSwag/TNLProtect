@@ -5,23 +5,30 @@ import com.sk89q.worldedit.bukkit.BukkitPlayer;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
+import net.nonswag.tnl.listener.api.command.CommandSource;
+import net.nonswag.tnl.listener.api.command.Invocation;
+import net.nonswag.tnl.listener.api.command.TNLCommand;
 import net.nonswag.tnl.listener.api.message.Message;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.protect.api.area.Area;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-public class AreaCommand implements CommandExecutor {
+public class AreaCommand extends TNLCommand {
+
+    public AreaCommand() {
+        super("area", "tnl.protect");
+    }
 
     @Override
-    public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
-        if (sender instanceof Player) {
-            TNLPlayer player = TNLPlayer.cast((Player) sender);
+    protected void execute(@Nonnull Invocation invocation) {
+        CommandSource source = invocation.source();
+        String[] args = invocation.arguments();
+        if (source.isPlayer()) {
+            TNLPlayer player = source.player();
             if (args.length >= 1) {
                 if (args[0].equalsIgnoreCase("create")) {
                     if (args.length >= 2) {
@@ -141,7 +148,51 @@ public class AreaCommand implements CommandExecutor {
                 player.sendMessage("%prefix% §c/area info §8(§6Area§8)");
                 player.sendMessage("%prefix% §c/area list");
             }
-        } else sender.sendMessage(Message.PLAYER_COMMAND_EN.getText());
-        return false;
+        } else source.sendMessage(Message.PLAYER_COMMAND_EN.getText());
+    }
+
+    @Nonnull
+    @Override
+    protected List<String> suggest(@Nonnull Invocation invocation) {
+        String[] args = invocation.arguments();
+        List<String> suggestions = new ArrayList<>();
+        if (args.length <= 1) {
+            suggestions.add("create");
+            suggestions.add("list");
+            suggestions.add("info");
+            suggestions.add("priority");
+            if (!Area.userAreas().isEmpty()) {
+                suggestions.add("select");
+                suggestions.add("delete");
+                suggestions.add("schematic");
+            }
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("select")) {
+                suggestions.addAll(Area.userAreaNames());
+            } else if (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("priority")) {
+                suggestions.addAll(Area.names());
+            } else if (args[0].equalsIgnoreCase("schematic")) {
+                suggestions.add("delete");
+                suggestions.add("load");
+                suggestions.add("save");
+            }
+        } else if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("priority")) {
+                for (int i = 0; i <= 10; i++) suggestions.add(String.valueOf(i));
+            } else if (args[0].equalsIgnoreCase("schematic")) {
+                if (args[1].equalsIgnoreCase("save")) {
+                    suggestions.addAll(Area.userAreaNames());
+                } else {
+                    if (args[1].equalsIgnoreCase("load") || args[1].equalsIgnoreCase("delete")) {
+                        for (Area area : Area.areas()) {
+                            if (!area.isGlobalArea() && area.getSchematic().getFile().exists()) {
+                                suggestions.add(area.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return suggestions;
     }
 }

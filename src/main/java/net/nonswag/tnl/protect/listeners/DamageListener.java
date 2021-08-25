@@ -17,7 +17,6 @@ public class DamageListener implements Listener {
     public void onDamage(@Nonnull EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
         TNLPlayer player = TNLPlayer.cast((Player) event.getEntity());
-        if (player.getPermissionManager().hasPermission("tnl.admin")) return;
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.DAMAGE)) event.setCancelled(true);
     }
@@ -26,7 +25,6 @@ public class DamageListener implements Listener {
     public void onDamage(@Nonnull EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player)) return;
         TNLPlayer player = TNLPlayer.cast((Player) event.getDamager());
-        if (player.getPermissionManager().hasPermission("tnl.admin")) return;
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.ATTACK)) event.setCancelled(true);
     }
@@ -34,7 +32,6 @@ public class DamageListener implements Listener {
     @EventHandler
     public void onDamage(@Nonnull PlayerShearEntityEvent event) {
         TNLPlayer player = TNLPlayer.cast(event.getPlayer());
-        if (player.getPermissionManager().hasPermission("tnl.admin")) return;
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.INTERACT)) event.setCancelled(true);
     }

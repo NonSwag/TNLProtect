@@ -6,5 +6,3 @@ author: "NonSwag"
 website: "https://www.thenextlvl.net"
 depend: ["TNLListener", "WorldEdit"]
 softdepend: ["TNLWorlds"]
-commands:
-  area:

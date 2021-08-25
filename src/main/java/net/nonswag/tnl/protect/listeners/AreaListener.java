@@ -13,14 +13,14 @@ public class AreaListener implements Listener {
     @EventHandler
     public void onAreaEnter(@Nonnull AreaEnterEvent event) {
         if (!event.getArea().getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.ENTER)) {
-            if (!event.getPlayer().getPermissionManager().hasPermission("tnl.admin")) event.setCancelled(true);
+            event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onAreaLeave(@Nonnull AreaLeaveEvent event) {
         if (!event.getArea().getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.LEAVE)) {
-            if (!event.getPlayer().getPermissionManager().hasPermission("tnl.admin")) event.setCancelled(true);
+            event.setCancelled(true);
         }
     }
 }

@@ -4,7 +4,6 @@ import net.nonswag.tnl.listener.api.command.CommandManager;
 import net.nonswag.tnl.listener.api.event.EventManager;
 import net.nonswag.tnl.protect.api.area.Area;
 import net.nonswag.tnl.protect.commands.AreaCommand;
-import net.nonswag.tnl.protect.completer.AreaCommandTabCompleter;
 import net.nonswag.tnl.protect.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,9 +19,8 @@ public class Protect extends JavaPlugin {
     @Override
     public void onEnable() {
         setInstance(this);
-        CommandManager commandManager = CommandManager.cast(this);
         EventManager eventManager = EventManager.cast(this);
-        commandManager.registerCommand("area", "tnl.protect", new AreaCommand(), new AreaCommandTabCompleter());
+        CommandManager.registerCommands(new AreaCommand());
         eventManager.registerListener(new AreaListener());
         eventManager.registerListener(new MoveListener());
         eventManager.registerListener(new WorldListener());
@@ -38,7 +36,7 @@ public class Protect extends JavaPlugin {
         Area.saveAreas();
     }
 
-    public static void setInstance(@Nonnull Protect instance) {
+    private static void setInstance(@Nonnull Protect instance) {
         Protect.instance = instance;
     }
 
