@@ -26,6 +26,7 @@ import net.nonswag.tnl.listener.types.BlockLocation;
 import net.nonswag.tnl.protect.api.event.AreaCreateEvent;
 import net.nonswag.tnl.protect.api.event.AreaDeleteEvent;
 import net.nonswag.tnl.protect.api.event.AreaSchematicDeleteEvent;
+import net.nonswag.tnl.protect.api.event.AreaSchematicLoadEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -228,12 +229,17 @@ public class Area {
             if (isGlobalArea()) return false;
             if (!getFile().exists()) return false;
             if (getRegion().getWorld() == null) return false;
+            AreaSchematicLoadEvent event = new AreaSchematicLoadEvent(Area.this);
+            if (!event.call()) return false;
             try (Clipboard clipboard = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(new FileInputStream(getFile())).read()) {
                 EditSession editSession = new EditSession(new EditSessionBuilder(getRegion().getWorld()));
                 for (Entity entity : getRegion().getWorld().getEntities(getRegion())) entity.remove();
                 Operation operation = new ClipboardHolder(clipboard).createPaste(editSession).to(getPos1()).copyEntities(true).ignoreAirBlocks(false).build();
                 Operations.complete(operation);
                 editSession.flushQueue();
+                for (AreaSchematicLoadEvent.Success success : event.getSuccessListeners()) {
+                    success.onSuccess(Area.this);
+                }
                 return true;
             } catch (IOException e) {
                 Logger.error.println(e);
