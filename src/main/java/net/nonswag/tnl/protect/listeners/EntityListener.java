@@ -1,6 +1,8 @@
 package net.nonswag.tnl.protect.listeners;
 
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
+import net.nonswag.tnl.listener.events.EntityDamageByPlayerEvent;
+import net.nonswag.tnl.listener.events.PlayerInteractAtEntityEvent;
 import net.nonswag.tnl.protect.api.area.Area;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,7 +13,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 
 import javax.annotation.Nonnull;
 
-public class DamageListener implements Listener {
+public class EntityListener implements Listener {
 
     @EventHandler
     public void onDamage(@Nonnull EntityDamageEvent event) {
@@ -30,7 +32,19 @@ public class DamageListener implements Listener {
     }
 
     @EventHandler
-    public void onDamage(@Nonnull PlayerShearEntityEvent event) {
+    public void onDamage(@Nonnull EntityDamageByPlayerEvent event) {
+        Area area = Area.highestArea(event.getEntity().getLocation());
+        if (!area.getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.ATTACK)) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInteract(@Nonnull PlayerInteractAtEntityEvent event) {
+        Area area = Area.highestArea(event.getEntity().getLocation());
+        if (!area.getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.INTERACT)) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onShear(@Nonnull PlayerShearEntityEvent event) {
         TNLPlayer player = TNLPlayer.cast(event.getPlayer());
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.INTERACT)) event.setCancelled(true);

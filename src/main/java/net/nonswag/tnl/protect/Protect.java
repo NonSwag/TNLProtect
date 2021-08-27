@@ -24,7 +24,7 @@ public class Protect extends JavaPlugin {
         eventManager.registerListener(new AreaListener());
         eventManager.registerListener(new MoveListener());
         eventManager.registerListener(new WorldListener());
-        eventManager.registerListener(new DamageListener());
+        eventManager.registerListener(new EntityListener());
         if (Bukkit.getPluginManager().isPluginEnabled("TNLWorlds")) {
             eventManager.registerListener(new WorldDeleteListener());
         }
