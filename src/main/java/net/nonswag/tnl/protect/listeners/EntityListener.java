@@ -20,7 +20,12 @@ public class EntityListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         TNLPlayer player = TNLPlayer.cast((Player) event.getEntity());
         Area area = Area.highestArea(event.getEntity().getLocation());
-        if (!area.getAction().onAction(player, Area.ActionEvent.Type.DAMAGE)) event.setCancelled(true);
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.DAMAGE)) {
+            if (!event.getCause().equals(EntityDamageEvent.DamageCause.VOID)) {
+                if (player.getFireTicks() > 0) player.setFireTicks(0);
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler

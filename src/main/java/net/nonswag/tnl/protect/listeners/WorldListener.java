@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 
 import javax.annotation.Nonnull;
 
@@ -63,5 +65,19 @@ public class WorldListener implements Listener {
     public void onWorldEvent(@Nonnull PlayerInteractEvent event) {
         Area area = Area.highestArea(event.getBlock());
         if (!area.getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.INTERACT)) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onWorldEvent(@Nonnull PlayerBucketFillEvent event) {
+        TNLPlayer player = TNLPlayer.cast(event.getPlayer());
+        Area area = Area.highestArea(event.getBlock());
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.BREAK)) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onWorldEvent(@Nonnull PlayerBucketEmptyEvent event) {
+        TNLPlayer player = TNLPlayer.cast(event.getPlayer());
+        Area area = Area.highestArea(event.getBlock());
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.BUILD)) event.setCancelled(true);
     }
 }
