@@ -18,8 +18,8 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import net.nonswag.tnl.listener.TNLListener;
-import net.nonswag.tnl.listener.api.config.JsonConfig;
-import net.nonswag.tnl.listener.api.file.FileHelper;
+import net.nonswag.tnl.listener.api.file.formats.JsonFile;
+import net.nonswag.tnl.listener.api.file.helper.FileHelper;
 import net.nonswag.tnl.listener.api.logger.Logger;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.listener.types.BlockLocation;
@@ -43,7 +43,7 @@ import java.util.*;
 public class Area {
 
     @Nonnull
-    private static final JsonConfig configuration = new JsonConfig("plugins/Protect", "areas.json");
+    private static final JsonFile configuration = new JsonFile("plugins/Protect", "areas.json");
     @Nonnull
     private static final HashMap<String, Area> areas = new HashMap<>();
 
@@ -288,7 +288,7 @@ public class Area {
     }
 
     @Nonnull
-    private static JsonConfig getConfiguration() {
+    public static JsonFile getConfiguration() {
         return configuration;
     }
 
