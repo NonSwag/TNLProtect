@@ -2,16 +2,16 @@ package net.nonswag.tnl.protect;
 
 import net.nonswag.tnl.listener.api.command.CommandManager;
 import net.nonswag.tnl.listener.api.event.EventManager;
+import net.nonswag.tnl.listener.api.plugin.TNLPlugin;
 import net.nonswag.tnl.protect.api.area.Area;
 import net.nonswag.tnl.protect.commands.AreaCommand;
 import net.nonswag.tnl.protect.listeners.*;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class Protect extends JavaPlugin {
+public class Protect extends TNLPlugin {
 
     @Nullable
     private static Protect instance = null;
