@@ -60,13 +60,15 @@ public class Area {
     @Nonnull
     private final Schematic schematic;
     @Nonnull
-    private ActionEvent action = (player, type) -> {
-        if ((player.getGamemode().isCreative() || player.getGamemode().isSpectator()) &&
-                player.getPermissionManager().hasPermission("tnl.admin")) return true;
-        else if (type.equals(ActionEvent.Type.INTERACT) &&
-                player.getItemInHand().getType().isEdible() &&
-                player.getFoodLevel() < 20) return true;
-        else return type.isAllowed();
+    private ActionEvent action = new ActionEvent() {
+        @Override
+        public <T> boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<T> type, @Nullable T target) {
+            if ((player.getGamemode().isCreative() || player.getGamemode().isSpectator()) &&
+                    player.getPermissionManager().hasPermission("tnl.admin")) return true;
+            else if (ActionEvent.Type.INTERACT.equals(type) && player.getItemInHand().getType().isEdible() &&
+                    player.getFoodLevel() < 20) return true;
+            else return type.isAllowed();
+        }
     };
     private int priority = 0;
     private boolean globalArea = false;
@@ -437,19 +439,31 @@ public class Area {
         return area;
     }
 
-    public interface ActionEvent {
+    public abstract static class ActionEvent {
 
-        boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type type);
+        public boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<Void> type) {
+            return onAction(player, type, null);
+        }
 
-        enum Type {
-            ENTER(true),
-            LEAVE(true),
-            BREAK,
-            BUILD,
-            INTERACT,
-            ATTACK,
-            DAMAGE,
-            ;
+        public abstract <T> boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<T> type, @Nullable T target);
+
+        public static class Type<T> {
+            @Nonnull
+            public static final Type<Void> ENTER = new Type<>(true);
+            @Nonnull
+            public static final Type<Void> LEAVE = new Type<>(true);
+            @Nonnull
+            public static final Type<Block> BREAK = new Type<>();
+            @Nonnull
+            public static final Type<Block> BUILD = new Type<>();
+            @Nonnull
+            public static final Type<Block> INTERACT = new Type<>();
+            @Nonnull
+            public static final Type<org.bukkit.entity.Entity> ENTITY_INTERACT = new Type<>();
+            @Nonnull
+            public static final Type<org.bukkit.entity.Entity> ATTACK = new Type<>();
+            @Nonnull
+            public static final Type<org.bukkit.entity.Entity> DAMAGE = new Type<>();
 
             private final boolean allowed;
 
