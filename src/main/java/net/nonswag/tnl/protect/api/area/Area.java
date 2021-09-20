@@ -21,12 +21,11 @@ import net.nonswag.tnl.listener.TNLListener;
 import net.nonswag.tnl.listener.api.file.formats.JsonFile;
 import net.nonswag.tnl.listener.api.file.helper.FileHelper;
 import net.nonswag.tnl.listener.api.logger.Logger;
+import net.nonswag.tnl.listener.api.message.Placeholder;
+import net.nonswag.tnl.listener.api.message.formulary.PlayerFormulary;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.listener.types.BlockLocation;
-import net.nonswag.tnl.protect.api.event.AreaCreateEvent;
-import net.nonswag.tnl.protect.api.event.AreaDeleteEvent;
-import net.nonswag.tnl.protect.api.event.AreaSchematicDeleteEvent;
-import net.nonswag.tnl.protect.api.event.AreaSchematicLoadEvent;
+import net.nonswag.tnl.protect.api.event.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -47,16 +46,26 @@ public class Area {
     @Nonnull
     private static final HashMap<String, Area> areas = new HashMap<>();
 
+    static {
+        Placeholder.Registry.register(new PlayerFormulary() {
+            @Nonnull
+            @Override
+            public Placeholder check(@Nonnull TNLPlayer player) {
+                return new Placeholder("area", Area.highestArea(player).getName());
+            }
+        });
+    }
+
     @Nonnull
-    private final CuboidRegion region;
+    private CuboidRegion region;
     @Nonnull
     private final String name;
     @Nonnull
     private final World world;
     @Nonnull
-    private final BlockVector3 pos1;
+    private BlockVector3 pos1;
     @Nonnull
-    private final BlockVector3 pos2;
+    private BlockVector3 pos2;
     @Nonnull
     private final Schematic schematic;
     @Nonnull
@@ -131,6 +140,24 @@ public class Area {
     @Nonnull
     public Area setPriority(int priority) {
         this.priority = priority;
+        return this;
+    }
+
+    @Nonnull
+    private Area setRegion(@Nonnull CuboidRegion region) {
+        this.region = region;
+        return this;
+    }
+
+    @Nonnull
+    private Area setPos1(@Nonnull BlockVector3 pos1) {
+        this.pos1 = pos1;
+        return this;
+    }
+
+    @Nonnull
+    private Area setPos2(@Nonnull BlockVector3 pos2) {
+        this.pos2 = pos2;
         return this;
     }
 
@@ -212,6 +239,21 @@ public class Area {
             if (equals(highestArea(all))) players.add(all);
         }
         return players;
+    }
+
+    public boolean redefine(@Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2) {
+        if (isGlobalArea()) return false;
+        AreaRedefineEvent redefineEvent = new AreaRedefineEvent(this, world, pos1, pos2);
+        if (!redefineEvent.call()) return false;
+        world = redefineEvent.getWorld();
+        pos1 = redefineEvent.getPos1();
+        pos2 = redefineEvent.getPos2();
+        if (pos1.getY() <= 0) setPos1(pos1.withY(1));
+        else setPos1(pos1);
+        if (pos2.getY() <= 0) setPos2(pos2.withY(1));
+        else setPos2(pos2);
+        setRegion(new CuboidRegion(new BukkitWorld(world), getPos1(), getPos2()));
+        return true;
     }
 
     public class Schematic {

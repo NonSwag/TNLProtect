@@ -11,6 +11,8 @@ import net.nonswag.tnl.listener.api.command.TNLCommand;
 import net.nonswag.tnl.listener.api.message.Message;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.protect.api.area.Area;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -45,6 +47,28 @@ public class AreaCommand extends TNLCommand {
                             }
                         } else player.sendMessage("%prefix% §cA Area named §4" + args[1] + "§c does already exist");
                     } else player.sendMessage("%prefix% §c/area create §8[§6Name§8]");
+                } else if (args[0].equalsIgnoreCase("redefine")) {
+                    Area area;
+                    if (args.length >= 2) area = Area.get(args[1]);
+                    else area = Area.highestArea(player);
+                    if (area != null && area.isGlobalArea()) {
+                        player.sendMessage("%prefix% §cCan't redefine a global area");
+                    } else if (area != null) {
+                        BukkitPlayer worldEdit = WorldEditPlugin.getInstance().wrapPlayer(player.getBukkitPlayer());
+                        try {
+                            Region selection = worldEdit.getSelection();
+                            if (selection.getWorld() == null) throw new IncompleteRegionException();
+                            BlockVector3 pos1 = selection.getMinimumPoint();
+                            BlockVector3 pos2 = selection.getMaximumPoint();
+                            String name = selection.getWorld().getName();
+                            World world = Bukkit.getWorld(name);
+                            if (world != null && area.redefine(world, pos1, pos2)) {
+                                player.sendMessage("%prefix% §7Redefined Area§8: §6" + area.getName());
+                            } else player.sendMessage("%prefix% §cFailed to redefine Area §4" + area.getName());
+                        } catch (IncompleteRegionException ignored) {
+                            player.sendMessage("%prefix% §cSelect a §8(§4WorldEdit§8)§c region first");
+                        }
+                    } else player.sendMessage("%prefix% §c/area redefine §8[§6Area§8]");
                 } else if (args[0].equalsIgnoreCase("delete")) {
                     Area area;
                     if (args.length >= 2) area = Area.get(args[1]);
@@ -130,25 +154,20 @@ public class AreaCommand extends TNLCommand {
                         }
                         player.sendMessage("%prefix% §7Priority§8: §6" + area.getPriority());
                     } else player.sendMessage("%prefix% §c/area info §8[§6Area§8]");
-                } else {
-                    player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
-                    player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
-                    player.sendMessage("%prefix% §c/area select §8(§6Area§8)");
-                    player.sendMessage("%prefix% §c/area create §8[§6Name§8]");
-                    player.sendMessage("%prefix% §c/area delete §8(§6Area§8)");
-                    player.sendMessage("%prefix% §c/area info §8(§6Area§8)");
-                    player.sendMessage("%prefix% §c/area list");
-                }
-            } else {
-                player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
-                player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
-                player.sendMessage("%prefix% §c/area select §8(§6Area§8)");
-                player.sendMessage("%prefix% §c/area create §8[§6Name§8]");
-                player.sendMessage("%prefix% §c/area delete §8(§6Area§8)");
-                player.sendMessage("%prefix% §c/area info §8(§6Area§8)");
-                player.sendMessage("%prefix% §c/area list");
-            }
+                } else help(player);
+            } else help(player);
         } else source.sendMessage(Message.PLAYER_COMMAND_EN.getText());
+    }
+
+    private void help(@Nonnull TNLPlayer player) {
+        player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
+        player.sendMessage("%prefix% §c/area redefine §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area create §8[§6Name§8]");
+        player.sendMessage("%prefix% §c/area select §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area delete §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area info §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area list");
     }
 
     @Nonnull
@@ -164,10 +183,11 @@ public class AreaCommand extends TNLCommand {
             if (!Area.userAreas().isEmpty()) {
                 suggestions.add("select");
                 suggestions.add("delete");
+                suggestions.add("redefine");
                 suggestions.add("schematic");
             }
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("select")) {
+            if (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("select") || args[0].equalsIgnoreCase("redefine")) {
                 suggestions.addAll(Area.userAreaNames());
             } else if (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("priority")) {
                 suggestions.addAll(Area.names());
