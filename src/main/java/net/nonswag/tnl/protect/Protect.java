@@ -1,7 +1,5 @@
 package net.nonswag.tnl.protect;
 
-import net.nonswag.tnl.listener.api.command.CommandManager;
-import net.nonswag.tnl.listener.api.event.EventManager;
 import net.nonswag.tnl.listener.api.plugin.TNLPlugin;
 import net.nonswag.tnl.protect.api.area.Area;
 import net.nonswag.tnl.protect.commands.AreaCommand;
@@ -19,14 +17,13 @@ public class Protect extends TNLPlugin {
     @Override
     public void onEnable() {
         setInstance(this);
-        EventManager eventManager = EventManager.cast(this);
-        CommandManager.registerCommands(new AreaCommand());
-        eventManager.registerListener(new AreaListener());
-        eventManager.registerListener(new MoveListener());
-        eventManager.registerListener(new WorldListener());
-        eventManager.registerListener(new EntityListener());
+        getCommandManager().registerCommands(new AreaCommand());
+        getEventManager().registerListener(new AreaListener());
+        getEventManager().registerListener(new MoveListener());
+        getEventManager().registerListener(new WorldListener());
+        getEventManager().registerListener(new EntityListener());
         if (Bukkit.getPluginManager().isPluginEnabled("TNLWorlds")) {
-            eventManager.registerListener(new WorldDeleteListener());
+            getEventManager().registerListener(new WorldDeleteListener());
         }
         Area.loadAll();
     }
