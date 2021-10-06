@@ -253,10 +253,15 @@ public class Area {
         if (pos2.getY() <= 0) setPos2(pos2.withY(1));
         else setPos2(pos2);
         setRegion(new CuboidRegion(new BukkitWorld(world), getPos1(), getPos2()));
+        new AreaPostRedefineEvent(redefineEvent).call();
         return true;
     }
 
-    public class Schematic {
+    public boolean isTooBig() {
+        return getRegion().size() >= 10000000;
+    }
+
+    public final class Schematic {
 
         @Nonnull
         private final File file = new File("plugins/Protect/Schematics/" + getName() + ".schem");
@@ -281,9 +286,7 @@ public class Area {
                 Operation operation = new ClipboardHolder(clipboard).createPaste(editSession).to(getPos1()).copyEntities(true).ignoreAirBlocks(false).build();
                 Operations.complete(operation);
                 editSession.flushQueue();
-                for (AreaSchematicLoadEvent.Success success : event.getSuccessListeners()) {
-                    success.onSuccess(Area.this);
-                }
+                for (AreaSchematicLoadEvent.Success s : event.getSuccessListeners()) s.onSuccess(Area.this);
                 return true;
             } catch (IOException e) {
                 Logger.error.println(e);
@@ -314,6 +317,7 @@ public class Area {
 
         @Nullable
         public Clipboard getSchematic() {
+            if (isGlobalArea()) return null;
             try (ClipboardReader reader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(new FileInputStream(getFile()))) {
                 return reader.read();
             } catch (IOException e) {
@@ -323,6 +327,7 @@ public class Area {
         }
 
         public boolean delete() {
+            if (isGlobalArea()) return false;
             if (!file.exists()) return true;
             if (new AreaSchematicDeleteEvent(Area.this).call()) {
                 FileHelper.deleteDirectory(file);
@@ -509,11 +514,11 @@ public class Area {
 
             private final boolean allowed;
 
-            Type() {
+            public Type() {
                 this(false);
             }
 
-            Type(boolean allowed) {
+            public Type(boolean allowed) {
                 this.allowed = allowed;
             }
 

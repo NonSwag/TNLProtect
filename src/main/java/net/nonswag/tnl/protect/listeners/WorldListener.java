@@ -17,6 +17,7 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void onWorldEvent(@Nonnull PlayerDamageBlockEvent event) {
+        if (event.getBlockDamageType().isItemAction()) return;
         Area area = Area.highestArea(event.getBlock());
         if (!area.getAction().onAction(event.getPlayer(), Area.ActionEvent.Type.BREAK, event.getBlock())) {
             event.setCancelled(true);

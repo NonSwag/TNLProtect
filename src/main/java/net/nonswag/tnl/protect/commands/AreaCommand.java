@@ -78,20 +78,28 @@ public class AreaCommand extends TNLCommand {
                         else player.sendMessage("%prefix% §cFailed to delete Area §4" + area.getName());
                     } else player.sendMessage("%prefix% §c/area delete §8[§6Area§8]");
                 } else if (args[0].equalsIgnoreCase("priority")) {
-                    if (args.length >= 2) {
-                        Area area = Area.get(args[1]);
-                        if (area != null) {
-                            if (args.length >= 3) {
-                                try {
-                                    int priority = Integer.parseInt(args[2]);
-                                    area.setPriority(priority);
-                                    player.sendMessage("%prefix% §aChanged Priority of §6" + area.getName() + "§a to §6" + priority);
-                                } catch (NumberFormatException ignored) {
-                                    player.sendMessage("%prefix% §c/area priority " + area.getName() + " §8[§6Priority§8]");
-                                }
-                            } else player.sendMessage("%prefix% §7Priority§8: §6" + area.getPriority());
-                        } else player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
-                    } else player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
+                    if (args.length >= 2 && args[1].equalsIgnoreCase("get")) {
+                        Area area = null;
+                        if (args.length >= 3) area = Area.get(args[2]);
+                        if (area == null) area = Area.highestArea(player);
+                        player.sendMessage("%prefix% §7Priority §8(§a" + area.getName() + "§8): §6" + area.getPriority());
+                    } else if (args.length >= 2 && args[1].equalsIgnoreCase("set")) {
+                        Area area = null;
+                        if (args.length >= 4) area = Area.get(args[3]);
+                        if (area == null) area = Area.highestArea(player);
+                        if (args.length >= 3) {
+                            try {
+                                int priority = Integer.parseInt(args[2]);
+                                area.setPriority(priority);
+                                player.sendMessage("%prefix% §aChanged Priority of §6" + area.getName() + "§a to §6" + priority);
+                            } catch (NumberFormatException ignored) {
+                                player.sendMessage("%prefix% §c/area priority set §8[§6Priority§8] §8(§6Area§8)");
+                            }
+                        } else player.sendMessage("%prefix% §c/area priority set §8[§6Priority§8] §8(§6Area§8)");
+                    } else {
+                        player.sendMessage("%prefix% §c/area priority set §8[§6Priority§8] §8(§6Area§8)");
+                        player.sendMessage("%prefix% §c/area priority get §8(§6Area§8)");
+                    }
                 } else if (args[0].equalsIgnoreCase("schematic")) {
                     if (args.length >= 2) {
                         Area area;
@@ -102,25 +110,36 @@ public class AreaCommand extends TNLCommand {
                         } else if (area == null) {
                             player.sendMessage("%prefix% §c/area schematic " + args[1] + " §8[§6Area§8]");
                         } else {
-                            if (args[1].equalsIgnoreCase("load")) {
-                                if (area.getSchematic().load()) {
-                                    player.sendMessage("%prefix% §7Loaded Schematic§8: §6" + area.getName());
-                                } else {
-                                    player.sendMessage("%prefix% §cFailed to load Schematic §4" + area.getName());
-                                }
-                            } else if (args[1].equalsIgnoreCase("delete")) {
-                                if (area.getSchematic().delete()) {
-                                    player.sendMessage("%prefix% §7Deleted Schematic§8: §6" + area.getName());
-                                } else {
-                                    player.sendMessage("%prefix% §cFailed to delete Schematic §4" + area.getName());
-                                }
-                            } else if (args[1].equalsIgnoreCase("save")) {
-                                if (area.getSchematic().save()) {
-                                    player.sendMessage("%prefix% §7Saved Schematic§8: §6" + area.getName());
-                                } else {
-                                    player.sendMessage("%prefix% §cFailed to save Schematic §4" + area.getName());
-                                }
-                            } else player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8[§6Area§8]");
+                            new Thread(() -> {
+                                if (args[1].equalsIgnoreCase("load")) {
+                                    if (area.isTooBig()) {
+                                        player.sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                    }
+                                    if (area.getSchematic().load()) {
+                                        player.sendMessage("%prefix% §7Loaded Schematic§8: §6" + area.getName());
+                                    } else {
+                                        player.sendMessage("%prefix% §cFailed to load Schematic §4" + area.getName());
+                                    }
+                                } else if (args[1].equalsIgnoreCase("delete")) {
+                                    if (area.isTooBig()) {
+                                        player.sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                    }
+                                    if (area.getSchematic().delete()) {
+                                        player.sendMessage("%prefix% §7Deleted Schematic§8: §6" + area.getName());
+                                    } else {
+                                        player.sendMessage("%prefix% §cFailed to delete Schematic §4" + area.getName());
+                                    }
+                                } else if (args[1].equalsIgnoreCase("save")) {
+                                    if (area.isTooBig()) {
+                                        player.sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                    }
+                                    if (area.getSchematic().save()) {
+                                        player.sendMessage("%prefix% §7Saved Schematic§8: §6" + area.getName());
+                                    } else {
+                                        player.sendMessage("%prefix% §cFailed to save Schematic §4" + area.getName());
+                                    }
+                                } else player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8[§6Area§8]");
+                            }, "Schematic Handler").start();
                         }
                     } else player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
                 } else if (args[0].equalsIgnoreCase("list")) {
@@ -161,7 +180,8 @@ public class AreaCommand extends TNLCommand {
 
     private void help(@Nonnull TNLPlayer player) {
         player.sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
-        player.sendMessage("%prefix% §c/area priority §8[§6Area§8] §8(§6Priority§8)");
+        player.sendMessage("%prefix% §c/area priority set §8[§6Priority§8] §8(§6Area§8)");
+        player.sendMessage("%prefix% §c/area priority get §8(§6Area§8)");
         player.sendMessage("%prefix% §c/area redefine §8(§6Area§8)");
         player.sendMessage("%prefix% §c/area create §8[§6Name§8]");
         player.sendMessage("%prefix% §c/area select §8(§6Area§8)");
@@ -189,7 +209,10 @@ public class AreaCommand extends TNLCommand {
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("select") || args[0].equalsIgnoreCase("redefine")) {
                 suggestions.addAll(Area.userAreaNames());
-            } else if (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("priority")) {
+            } else if (args[0].equalsIgnoreCase("priority")) {
+                suggestions.add("set");
+                suggestions.add("get");
+            } else if (args[0].equalsIgnoreCase("info")) {
                 suggestions.addAll(Area.names());
             } else if (args[0].equalsIgnoreCase("schematic")) {
                 suggestions.add("delete");
@@ -198,7 +221,11 @@ public class AreaCommand extends TNLCommand {
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("priority")) {
-                for (int i = 0; i <= 10; i++) suggestions.add(String.valueOf(i));
+                if (args[1].equalsIgnoreCase("get")) {
+                    suggestions.addAll(Area.names());
+                } else if (args[1].equalsIgnoreCase("set")) {
+                    for (int i = 0; i <= 10; i++) suggestions.add(String.valueOf(i));
+                }
             } else if (args[0].equalsIgnoreCase("schematic")) {
                 if (args[1].equalsIgnoreCase("save")) {
                     suggestions.addAll(Area.userAreaNames());
@@ -210,6 +237,12 @@ public class AreaCommand extends TNLCommand {
                             }
                         }
                     }
+                }
+            }
+        } else if (args.length == 4) {
+            if (args[0].equalsIgnoreCase("priority")) {
+                if (args[1].equalsIgnoreCase("set")) {
+                    suggestions.addAll(Area.names());
                 }
             }
         }

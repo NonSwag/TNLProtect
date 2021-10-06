@@ -15,9 +15,9 @@ public class Protect extends TNLPlugin {
     private static Protect instance = null;
 
     @Override
-    public void onEnable() {
+    public void enable() {
         setInstance(this);
-        getCommandManager().registerCommands(new AreaCommand());
+        getCommandManager().registerCommand(new AreaCommand());
         getEventManager().registerListener(new AreaListener());
         getEventManager().registerListener(new MoveListener());
         getEventManager().registerListener(new WorldListener());
@@ -29,7 +29,7 @@ public class Protect extends TNLPlugin {
     }
 
     @Override
-    public void onDisable() {
+    public void disable() {
         Area.saveAreas();
     }
 

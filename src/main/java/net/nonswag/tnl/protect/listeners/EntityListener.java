@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 
 import javax.annotation.Nonnull;
@@ -70,6 +72,33 @@ public class EntityListener implements Listener {
         TNLPlayer player = TNLPlayer.cast((Player) event.getRemover());
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.ATTACK, event.getEntity())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onArmorStandManipulate(@Nonnull PlayerArmorStandManipulateEvent event) {
+        TNLPlayer player = TNLPlayer.cast(event.getPlayer());
+        Area area = Area.highestArea(event.getRightClicked().getLocation());
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.ATTACK, event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityInteract(@Nonnull org.bukkit.event.player.PlayerInteractAtEntityEvent event) {
+        TNLPlayer player = TNLPlayer.cast(event.getPlayer());
+        Area area = Area.highestArea(event.getRightClicked().getLocation());
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.ATTACK, event.getRightClicked())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityInteract(@Nonnull PlayerInteractEntityEvent event) {
+        TNLPlayer player = TNLPlayer.cast(event.getPlayer());
+        Area area = Area.highestArea(event.getRightClicked().getLocation());
+        if (!area.getAction().onAction(player, Area.ActionEvent.Type.ATTACK, event.getRightClicked())) {
             event.setCancelled(true);
         }
     }
