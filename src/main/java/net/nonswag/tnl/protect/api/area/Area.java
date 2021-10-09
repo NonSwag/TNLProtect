@@ -17,12 +17,13 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import net.nonswag.tnl.core.api.file.formats.JsonFile;
+import net.nonswag.tnl.core.api.file.helper.FileHelper;
+import net.nonswag.tnl.core.api.logger.Logger;
+import net.nonswag.tnl.core.api.message.Placeholder;
+import net.nonswag.tnl.core.api.message.formulary.PlayerFormulary;
+import net.nonswag.tnl.core.api.platform.PlatformPlayer;
 import net.nonswag.tnl.listener.TNLListener;
-import net.nonswag.tnl.listener.api.file.formats.JsonFile;
-import net.nonswag.tnl.listener.api.file.helper.FileHelper;
-import net.nonswag.tnl.listener.api.logger.Logger;
-import net.nonswag.tnl.listener.api.message.Placeholder;
-import net.nonswag.tnl.listener.api.message.formulary.PlayerFormulary;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.listener.types.BlockLocation;
 import net.nonswag.tnl.protect.api.event.*;
@@ -50,8 +51,8 @@ public class Area {
         Placeholder.Registry.register(new PlayerFormulary() {
             @Nonnull
             @Override
-            public Placeholder check(@Nonnull TNLPlayer player) {
-                return new Placeholder("area", Area.highestArea(player).getName());
+            public Placeholder check(@Nonnull PlatformPlayer player) {
+                return new Placeholder("area", Area.highestArea((TNLPlayer) player).getName());
             }
         });
     }
