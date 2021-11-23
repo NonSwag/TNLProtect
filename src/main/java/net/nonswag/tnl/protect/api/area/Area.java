@@ -174,10 +174,6 @@ public class Area {
         return isInside(location.getBlock());
     }
 
-    public boolean isInside(@Nonnull BlockLocation location) {
-        return isInside(location.getLocation());
-    }
-
     public boolean isInside(@Nonnull TNLPlayer player) {
         return isInside(player.getLocation());
     }

@@ -7,8 +7,8 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import net.nonswag.tnl.core.api.command.CommandSource;
 import net.nonswag.tnl.core.api.command.Invocation;
-import net.nonswag.tnl.core.api.message.Message;
 import net.nonswag.tnl.listener.api.command.TNLCommand;
+import net.nonswag.tnl.listener.api.command.exceptions.SourceMismatchException;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.protect.api.area.Area;
 import org.bukkit.Bukkit;
@@ -175,7 +175,7 @@ public class AreaCommand extends TNLCommand {
                     } else player.sendMessage("%prefix% §c/area info §8[§6Area§8]");
                 } else help(player);
             } else help(player);
-        } else source.sendMessage(Message.PLAYER_COMMAND_EN.getText());
+        } else throw new SourceMismatchException();
     }
 
     private void help(@Nonnull TNLPlayer player) {
