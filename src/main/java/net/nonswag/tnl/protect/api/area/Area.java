@@ -21,11 +21,8 @@ import net.nonswag.tnl.core.api.file.formats.JsonFile;
 import net.nonswag.tnl.core.api.file.helper.FileHelper;
 import net.nonswag.tnl.core.api.logger.Logger;
 import net.nonswag.tnl.core.api.message.Placeholder;
-import net.nonswag.tnl.core.api.message.formulary.PlayerFormulary;
-import net.nonswag.tnl.core.api.platform.PlatformPlayer;
 import net.nonswag.tnl.listener.TNLListener;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
-import net.nonswag.tnl.listener.types.BlockLocation;
 import net.nonswag.tnl.protect.api.event.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,13 +45,7 @@ public class Area {
     private static final HashMap<String, Area> areas = new HashMap<>();
 
     static {
-        Placeholder.Registry.register(new PlayerFormulary() {
-            @Nonnull
-            @Override
-            public Placeholder check(@Nonnull PlatformPlayer player) {
-                return new Placeholder("area", Area.highestArea((TNLPlayer) player).getName());
-            }
-        });
+        Placeholder.Registry.register(new Placeholder("area", player -> Area.highestArea((TNLPlayer) player).getName()));
     }
 
     @Nonnull
