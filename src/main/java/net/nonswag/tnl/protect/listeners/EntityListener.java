@@ -25,7 +25,7 @@ public class EntityListener implements Listener {
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (!area.getAction().onAction(player, Area.ActionEvent.Type.DAMAGE, event.getEntity())) {
             if (!event.getCause().equals(EntityDamageEvent.DamageCause.VOID)) {
-                if (player.getFireTicks() > 0) player.setFireTicks(0);
+                if (player.bukkit().getFireTicks() > 0) player.bukkit().setFireTicks(0);
                 event.setCancelled(true);
             }
         }

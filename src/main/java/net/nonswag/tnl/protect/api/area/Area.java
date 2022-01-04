@@ -65,10 +65,10 @@ public class Area {
         @Override
         public <T> boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<T> type, @Nullable T target) {
             if ((player.getGamemode().isCreative() || player.getGamemode().isSpectator()) &&
-                    player.getPermissionManager().hasPermission("tnl.admin")) return true;
-            else if (ActionEvent.Type.INTERACT.equals(type) && player.getItemInHand().getType().isEdible() &&
-                    player.getFoodLevel() < 20) return true;
-            else return type.isAllowed();
+                    player.permissionManager().hasPermission("tnl.admin")) return true;
+            else if (ActionEvent.Type.INTERACT.equals(type) && player.inventoryManager().getItemInMainHand().getType().isEdible() && player.bukkit().getFoodLevel() < 20) {
+                return true;
+            } else return type.isAllowed();
         }
     };
     private int priority = 0;
@@ -166,7 +166,7 @@ public class Area {
     }
 
     public boolean isInside(@Nonnull TNLPlayer player) {
-        return isInside(player.getLocation());
+        return isInside(player.worldManager().getLocation());
     }
 
     private void export() {
@@ -358,7 +358,7 @@ public class Area {
 
     @Nonnull
     public static List<Area> areas(@Nonnull TNLPlayer player) {
-        return areas(player.getLocation());
+        return areas(player.worldManager().getLocation());
     }
 
     @Nonnull
@@ -389,7 +389,7 @@ public class Area {
 
     @Nonnull
     public static Area highestArea(@Nonnull TNLPlayer player) {
-        return highestArea(player.getLocation());
+        return highestArea(player.worldManager().getLocation());
     }
 
     @Nonnull
