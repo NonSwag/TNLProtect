@@ -223,9 +223,7 @@ public class Area {
     @Nonnull
     public List<TNLPlayer> getPlayers() {
         List<TNLPlayer> players = new ArrayList<>();
-        for (TNLPlayer all : TNLListener.getInstance().getOnlinePlayers()) {
-            if (equals(highestArea(all))) players.add(all);
-        }
+        for (TNLPlayer all : TNLListener.getOnlinePlayers()) if (equals(highestArea(all))) players.add(all);
         return players;
     }
 
