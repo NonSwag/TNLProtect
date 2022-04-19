@@ -17,6 +17,8 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import lombok.AccessLevel;
+import lombok.Getter;
 import net.nonswag.tnl.core.api.file.formats.JsonFile;
 import net.nonswag.tnl.core.api.file.helper.FileHelper;
 import net.nonswag.tnl.core.api.logger.Logger;
@@ -37,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+@Getter
 public class Area {
 
     @Nonnull
@@ -60,19 +63,11 @@ public class Area {
     private BlockVector3 pos2;
     @Nonnull
     private final Schematic schematic;
-    @Nonnull
-    private ActionEvent action = new ActionEvent() {
-        @Override
-        public <T> boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<T> type, @Nullable T target) {
-            if ((player.getGamemode().isCreative() || player.getGamemode().isSpectator()) &&
-                    player.permissionManager().hasPermission("tnl.admin")) return true;
-            else if (ActionEvent.Type.INTERACT.equals(type) && player.inventoryManager().getItemInMainHand().getType().isEdible() && player.bukkit().getFoodLevel() < 20) {
-                return true;
-            } else return type.isAllowed();
-        }
-    };
     private int priority = 0;
     private boolean globalArea = false;
+    @Nonnull
+    @Getter(AccessLevel.NONE)
+    private final HashMap<Flag<?>, Object> flags = new HashMap<>();
 
     private Area(@Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2, @Nonnull String name) throws IllegalArgumentException {
         this.name = name;
@@ -88,39 +83,6 @@ public class Area {
     private Area(@Nonnull World world) {
         this(world, BlockVector3.at(30000000, 265, 30000000), BlockVector3.at(-30000000, 0, -30000000), world.getName());
         setGlobalArea(true).setPriority(-1);
-    }
-
-    @Nonnull
-    public CuboidRegion getRegion() {
-        return region;
-    }
-
-    @Nonnull
-    public String getName() {
-        return name;
-    }
-
-    @Nonnull
-    public World getWorld() {
-        return world;
-    }
-
-    @Nonnull
-    public BlockVector3 getPos1() {
-        return pos1;
-    }
-
-    @Nonnull
-    public BlockVector3 getPos2() {
-        return pos2;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public boolean isGlobalArea() {
-        return globalArea;
     }
 
     @Nonnull
@@ -170,7 +132,7 @@ public class Area {
     }
 
     private void export() {
-        JsonObject root = getConfiguration().getJsonElement().getAsJsonObject();
+        JsonObject root = configuration.getJsonElement().getAsJsonObject();
         JsonObject area = new JsonObject();
         area.addProperty("world", getWorld().getName());
         area.addProperty("priority", getPriority());
@@ -196,28 +158,16 @@ public class Area {
     public boolean delete(boolean force) {
         if (!force && isGlobalArea()) return false;
         if (!isGlobalArea() && !getSchematic().delete()) return false;
-        else if (new AreaDeleteEvent(this).call()) {
-            getConfiguration().getJsonElement().getAsJsonObject().remove(getName());
-            getAreas().remove(getName());
-            return true;
-        } else return false;
+        else if (!new AreaDeleteEvent(this).call()) return false;
+        configuration.getJsonElement().getAsJsonObject().remove(getName());
+        areas.remove(getName());
+        return true;
     }
 
     @Nonnull
     public Schematic getSchematic() {
         if (isGlobalArea()) throw new NullPointerException("Not allowed for global areas");
         return schematic;
-    }
-
-    @Nonnull
-    public ActionEvent getAction() {
-        return action;
-    }
-
-    @Nonnull
-    public Area setAction(@Nonnull ActionEvent action) {
-        this.action = action;
-        return this;
     }
 
     @Nonnull
@@ -245,6 +195,23 @@ public class Area {
 
     public boolean isTooBig() {
         return getRegion().size() >= 10000000;
+    }
+
+    @Nonnull
+    public <T> T getFlag(@Nonnull Flag<T> flag) {
+        return (T) flags.getOrDefault(flag, flag.defaultValue());
+    }
+
+    public <T> void setFlag(@Nonnull Flag<T> flag, @Nonnull T value) {
+        flags.put(flag, value);
+    }
+
+    public boolean hasFlag(@Nonnull Flag<?> flag) {
+        return flags.containsKey(flag);
+    }
+
+    public void unsetFlag(@Nonnull Flag<?> flag) {
+        flags.remove(flag);
     }
 
     public final class Schematic {
@@ -323,18 +290,8 @@ public class Area {
     }
 
     @Nonnull
-    public static JsonFile getConfiguration() {
-        return configuration;
-    }
-
-    @Nonnull
-    private static HashMap<String, Area> getAreas() {
-        return areas;
-    }
-
-    @Nonnull
     public static Collection<Area> areas() {
-        return getAreas().values();
+        return areas.values();
     }
 
     @Nonnull
@@ -346,12 +303,12 @@ public class Area {
 
     @Nonnull
     public static Set<String> names() {
-        return getAreas().keySet();
+        return areas.keySet();
     }
 
     public static void saveAreas() {
         for (Area area : areas()) area.export();
-        getConfiguration().save();
+        configuration.save();
     }
 
     @Nonnull
@@ -406,7 +363,7 @@ public class Area {
 
     @Nullable
     public static Area get(@Nonnull String name) {
-        return getAreas().get(name);
+        return areas.get(name);
     }
 
     @Nonnull
@@ -417,14 +374,14 @@ public class Area {
     }
 
     public static boolean exists(@Nonnull String name) {
-        JsonObject root = getConfiguration().getJsonElement().getAsJsonObject();
+        JsonObject root = configuration.getJsonElement().getAsJsonObject();
         return root.has(name) && root.get(name).isJsonObject();
     }
 
     @Nonnull
     public static Area load(@Nonnull String name) throws NullPointerException {
         if (!exists(name)) throw new NullPointerException("Region not found");
-        JsonObject root = getConfiguration().getJsonElement().getAsJsonObject();
+        JsonObject root = configuration.getJsonElement().getAsJsonObject();
         JsonObject area = root.getAsJsonObject(name);
         if (!area.has("world")) throw new NullPointerException("No world defined");
         if (!area.has("priority")) throw new NullPointerException("No priority defined");
@@ -445,7 +402,7 @@ public class Area {
 
     @Nonnull
     public static List<Area> loadAll() {
-        JsonObject root = getConfiguration().getJsonElement().getAsJsonObject();
+        JsonObject root = configuration.getJsonElement().getAsJsonObject();
         List<Area> areas = new ArrayList<>();
         for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
             try {
@@ -460,7 +417,7 @@ public class Area {
     @Nonnull
     public static Area create(@Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2, @Nonnull String name) {
         Area area = new Area(world, pos1, pos2, name);
-        getAreas().put(area.getName(), area);
+        areas.put(area.getName(), area);
         new AreaCreateEvent(area).call();
         return area;
     }
@@ -468,49 +425,7 @@ public class Area {
     @Nonnull
     public static Area create(@Nonnull World world) {
         Area area = new Area(world);
-        getAreas().put(area.getName(), area);
+        areas.put(area.getName(), area);
         return area;
-    }
-
-    public abstract static class ActionEvent {
-
-        public boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<Void> type) {
-            return onAction(player, type, null);
-        }
-
-        public abstract <T> boolean onAction(@Nonnull TNLPlayer player, @Nonnull Type<T> type, @Nullable T target);
-
-        public static class Type<T> {
-            @Nonnull
-            public static final Type<Void> ENTER = new Type<>(true);
-            @Nonnull
-            public static final Type<Void> LEAVE = new Type<>(true);
-            @Nonnull
-            public static final Type<Block> BREAK = new Type<>();
-            @Nonnull
-            public static final Type<Block> BUILD = new Type<>();
-            @Nonnull
-            public static final Type<Block> INTERACT = new Type<>();
-            @Nonnull
-            public static final Type<org.bukkit.entity.Entity> ENTITY_INTERACT = new Type<>();
-            @Nonnull
-            public static final Type<org.bukkit.entity.Entity> ATTACK = new Type<>();
-            @Nonnull
-            public static final Type<org.bukkit.entity.Entity> DAMAGE = new Type<>();
-
-            private final boolean allowed;
-
-            public Type() {
-                this(false);
-            }
-
-            public Type(boolean allowed) {
-                this.allowed = allowed;
-            }
-
-            public boolean isAllowed() {
-                return allowed;
-            }
-        }
     }
 }

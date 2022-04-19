@@ -11,6 +11,7 @@ import net.nonswag.tnl.listener.api.command.TNLCommand;
 import net.nonswag.tnl.listener.api.command.exceptions.SourceMismatchException;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.listener.api.player.manager.Messenger;
+import net.nonswag.tnl.protect.Protect;
 import net.nonswag.tnl.protect.api.area.Area;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -71,9 +72,7 @@ public class AreaCommand extends TNLCommand {
                         }
                     } else player.messenger().sendMessage("%prefix% §c/area redefine §8[§6Area§8]");
                 } else if (args[0].equalsIgnoreCase("delete")) {
-                    Area area;
-                    if (args.length >= 2) area = Area.get(args[1]);
-                    else area = Area.highestArea(player);
+                    Area area = args.length >= 2 ? Area.get(args[1]) : Area.highestArea(player);
                     if (area != null) {
                         if (area.delete()) {
                             player.messenger().sendMessage("%prefix% §7Deleted Area§8: §6" + area.getName());
@@ -81,13 +80,11 @@ public class AreaCommand extends TNLCommand {
                     } else player.messenger().sendMessage("%prefix% §c/area delete §8[§6Area§8]");
                 } else if (args[0].equalsIgnoreCase("priority")) {
                     if (args.length >= 2 && args[1].equalsIgnoreCase("get")) {
-                        Area area = null;
-                        if (args.length >= 3) area = Area.get(args[2]);
+                        Area area = args.length >= 3 ? Area.get(args[2]) : null;
                         if (area == null) area = Area.highestArea(player);
                         player.messenger().sendMessage("%prefix% §7Priority §8(§a" + area.getName() + "§8): §6" + area.getPriority());
                     } else if (args.length >= 2 && args[1].equalsIgnoreCase("set")) {
-                        Area area = null;
-                        if (args.length >= 4) area = Area.get(args[3]);
+                        Area area = args.length >= 4 ? Area.get(args[3]) : null;
                         if (area == null) area = Area.highestArea(player);
                         if (args.length >= 3) {
                             try {
@@ -104,45 +101,43 @@ public class AreaCommand extends TNLCommand {
                     }
                 } else if (args[0].equalsIgnoreCase("schematic")) {
                     if (args.length >= 2) {
-                        Area area;
-                        if (args.length >= 3) area = Area.get(args[2]);
-                        else area = Area.highestArea(player);
+                        Area area = args.length >= 3 ? Area.get(args[2]) : Area.highestArea(player);
                         if (area != null && area.isGlobalArea()) {
                             player.messenger().sendMessage("%prefix% §cCan't use a global area");
                         } else if (area == null) {
                             player.messenger().sendMessage("%prefix% §c/area schematic " + args[1] + " §8[§6Area§8]");
-                        } else {
-                            new Thread(() -> {
-                                if (args[1].equalsIgnoreCase("load")) {
-                                    if (area.isTooBig()) {
-                                        player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
-                                    }
-                                    if (area.getSchematic().load()) {
-                                        player.messenger().sendMessage("%prefix% §7Loaded Schematic§8: §6" + area.getName());
-                                    } else {
-                                        player.messenger().sendMessage("%prefix% §cFailed to load Schematic §4" + area.getName());
-                                    }
-                                } else if (args[1].equalsIgnoreCase("delete")) {
-                                    if (area.isTooBig()) {
-                                        player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
-                                    }
-                                    if (area.getSchematic().delete()) {
-                                        player.messenger().sendMessage("%prefix% §7Deleted Schematic§8: §6" + area.getName());
-                                    } else {
-                                        player.messenger().sendMessage("%prefix% §cFailed to delete Schematic §4" + area.getName());
-                                    }
-                                } else if (args[1].equalsIgnoreCase("save")) {
-                                    if (area.isTooBig()) {
-                                        player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
-                                    }
-                                    if (area.getSchematic().save()) {
-                                        player.messenger().sendMessage("%prefix% §7Saved Schematic§8: §6" + area.getName());
-                                    } else {
-                                        player.messenger().sendMessage("%prefix% §cFailed to save Schematic §4" + area.getName());
-                                    }
-                                } else player.messenger().sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8[§6Area§8]");
-                            }, "Schematic Handler").start();
-                        }
+                        } else Protect.getInstance().async(() -> {
+                            if (args[1].equalsIgnoreCase("load")) {
+                                if (area.isTooBig()) {
+                                    player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                }
+                                if (area.getSchematic().load()) {
+                                    player.messenger().sendMessage("%prefix% §7Loaded Schematic§8: §6" + area.getName());
+                                } else {
+                                    player.messenger().sendMessage("%prefix% §cFailed to load Schematic §4" + area.getName());
+                                }
+                            } else if (args[1].equalsIgnoreCase("delete")) {
+                                if (area.isTooBig()) {
+                                    player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                }
+                                if (area.getSchematic().delete()) {
+                                    player.messenger().sendMessage("%prefix% §7Deleted Schematic§8: §6" + area.getName());
+                                } else {
+                                    player.messenger().sendMessage("%prefix% §cFailed to delete Schematic §4" + area.getName());
+                                }
+                            } else if (args[1].equalsIgnoreCase("save")) {
+                                if (area.isTooBig()) {
+                                    player.messenger().sendMessage("%prefix% §7Warning§8: §6The area is very big");
+                                }
+                                if (area.getSchematic().save()) {
+                                    player.messenger().sendMessage("%prefix% §7Saved Schematic§8: §6" + area.getName());
+                                } else {
+                                    player.messenger().sendMessage("%prefix% §cFailed to save Schematic §4" + area.getName());
+                                }
+                            } else {
+                                player.messenger().sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8[§6Area§8]");
+                            }
+                        });
                     } else player.messenger().sendMessage("%prefix% §c/area schematic §8[§6Option§8] §8(§6Area§8)");
                 } else if (args[0].equalsIgnoreCase("list")) {
                     Set<String> names = Area.names();

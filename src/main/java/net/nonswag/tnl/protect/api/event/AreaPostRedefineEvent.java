@@ -1,29 +1,23 @@
 package net.nonswag.tnl.protect.api.event;
 
+import com.sk89q.worldedit.math.BlockVector3;
+import net.nonswag.tnl.protect.api.area.Area;
+import org.bukkit.World;
+
 import javax.annotation.Nonnull;
 
-public class AreaPostRedefineEvent extends AreaEvent {
+public class AreaPostRedefineEvent extends AreaRedefineEvent {
 
-    @Nonnull
-    private final AreaRedefineEvent redefineEvent;
-
-    public AreaPostRedefineEvent(@Nonnull AreaRedefineEvent redefineEvent) {
-        super(redefineEvent.getArea());
-        this.redefineEvent = redefineEvent;
+    public AreaPostRedefineEvent(@Nonnull Area area, @Nonnull World world, @Nonnull BlockVector3 pos1, @Nonnull BlockVector3 pos2) {
+        super(area, world, pos1, pos2);
     }
 
-    @Nonnull
-    public AreaRedefineEvent getRedefineEvent() {
-        return redefineEvent;
+    public AreaPostRedefineEvent(@Nonnull AreaRedefineEvent event) {
+        this(event.getArea(), event.getWorld(), event.getPos1(), event.getPos2());
+        super.setCancelled(event.isCancelled());
     }
 
     @Override
-    public boolean isCancelled() {
-        return getRedefineEvent().isCancelled();
-    }
-
-    @Override
-    protected boolean denyCancellation() {
-        return true;
+    public void setCancelled(boolean cancelled) {
     }
 }

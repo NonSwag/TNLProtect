@@ -1,10 +1,12 @@
 package net.nonswag.tnl.protect.api.event;
 
+import lombok.Getter;
 import net.nonswag.tnl.listener.api.event.TNLEvent;
 import net.nonswag.tnl.protect.api.area.Area;
 
 import javax.annotation.Nonnull;
 
+@Getter
 public abstract class AreaEvent extends TNLEvent {
 
     @Nonnull
@@ -12,10 +14,5 @@ public abstract class AreaEvent extends TNLEvent {
 
     protected AreaEvent(@Nonnull Area area) {
         this.area = area;
-    }
-
-    @Nonnull
-    public Area getArea() {
-        return area;
     }
 }

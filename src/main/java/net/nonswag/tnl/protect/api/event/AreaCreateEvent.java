@@ -11,7 +11,7 @@ public class AreaCreateEvent extends AreaEvent {
     }
 
     @Override
-    protected boolean denyCancellation() {
-        return true;
+    public boolean isCancelled() {
+        return false;
     }
 }
