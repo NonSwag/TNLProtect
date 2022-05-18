@@ -23,7 +23,7 @@ import net.nonswag.tnl.core.api.file.formats.JsonFile;
 import net.nonswag.tnl.core.api.file.helper.FileHelper;
 import net.nonswag.tnl.core.api.logger.Logger;
 import net.nonswag.tnl.core.api.message.Placeholder;
-import net.nonswag.tnl.listener.TNLListener;
+import net.nonswag.tnl.listener.Listener;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.protect.api.event.*;
 import org.bukkit.Bukkit;
@@ -173,7 +173,7 @@ public class Area {
     @Nonnull
     public List<TNLPlayer> getPlayers() {
         List<TNLPlayer> players = new ArrayList<>();
-        for (TNLPlayer all : TNLListener.getOnlinePlayers()) if (equals(highestArea(all))) players.add(all);
+        for (TNLPlayer all : Listener.getOnlinePlayers()) if (equals(highestArea(all))) players.add(all);
         return players;
     }
 
