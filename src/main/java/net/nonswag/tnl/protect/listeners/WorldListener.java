@@ -99,4 +99,10 @@ public class WorldListener implements Listener {
         Area area = Area.highestArea(event.getBlock());
         if (!area.getFlag(Flag.PLACE).test(event.getPlayer())) event.setCancelled(true);
     }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onWorldEvent(@Nonnull BlockSpreadEvent event) {
+        Area area = Area.highestArea(event.getBlock());
+        if (!area.getFlag(Flag.PHYSICS)) event.setCancelled(true);
+    }
 }

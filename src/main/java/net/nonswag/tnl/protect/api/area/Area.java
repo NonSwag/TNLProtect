@@ -48,7 +48,7 @@ public class Area {
     private static final HashMap<String, Area> areas = new HashMap<>();
 
     static {
-        Placeholder.Registry.register(new Placeholder("area", player -> Area.highestArea((TNLPlayer) player).getName()));
+        Placeholder.Registry.register(new Placeholder("area", player -> Area.highestArea((TNLPlayer) player)));
     }
 
     @Nonnull
@@ -148,6 +148,15 @@ public class Area {
             area.add("pos1", pos1);
             area.add("pos2", pos2);
         }
+        JsonObject flags = new JsonObject();
+        this.flags.forEach((flag, value) -> {
+            for (String s : flag.possibilities().keySet()) {
+                if (!flag.possibilities().get(s).equals(value)) continue;
+                flags.addProperty(flag.name(), s);
+                return;
+            }
+        });
+        area.add("flags", flags);
         root.add(getName(), area);
     }
 
@@ -158,7 +167,7 @@ public class Area {
     public boolean delete(boolean force) {
         if (!force && isGlobalArea()) return false;
         if (!isGlobalArea() && !getSchematic().delete()) return false;
-        else if (!new AreaDeleteEvent(this).call()) return false;
+        else if (!new AreaDeleteEvent(this, force).call()) return false;
         configuration.getJsonElement().getAsJsonObject().remove(getName());
         areas.remove(getName());
         return true;
@@ -166,7 +175,7 @@ public class Area {
 
     @Nonnull
     public Schematic getSchematic() {
-        if (isGlobalArea()) throw new NullPointerException("Not allowed for global areas");
+        if (isGlobalArea()) throw new UnsupportedOperationException("Not allowed for global areas");
         return schematic;
     }
 
@@ -194,7 +203,7 @@ public class Area {
     }
 
     public boolean isTooBig() {
-        return getRegion().size() >= 10000000;
+        return isGlobalArea() || getRegion().size() >= 10000000;
     }
 
     @Nonnull
@@ -202,34 +211,38 @@ public class Area {
         return (T) flags.getOrDefault(flag, flag.defaultValue());
     }
 
-    public <T> void setFlag(@Nonnull Flag<T> flag, @Nonnull T value) {
+    public <T> boolean setFlag(@Nonnull Flag<T> flag, @Nonnull T value) {
+        if (getFlag(flag).equals(value)) return false;
         flags.put(flag, value);
+        return true;
     }
 
     public boolean hasFlag(@Nonnull Flag<?> flag) {
         return flags.containsKey(flag);
     }
 
-    public void unsetFlag(@Nonnull Flag<?> flag) {
+    public boolean unsetFlag(@Nonnull Flag<?> flag) {
+        if (!hasFlag(flag)) return false;
         flags.remove(flag);
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     public final class Schematic {
 
+        @Getter
         @Nonnull
-        private final File file = new File("plugins/Protect/Schematics/" + getName() + ".schem");
+        private final File file = new File("plugins/Protect/Schematics/" + Area.this + ".schem");
 
         private Schematic() {
         }
 
-        @Nonnull
-        public File getFile() {
-            return file;
-        }
-
         public boolean load() {
-            if (isGlobalArea()) return false;
-            if (!getFile().exists()) return false;
+            if (isGlobalArea() || !getFile().exists()) return false;
             if (getRegion().getWorld() == null) return false;
             AreaSchematicLoadEvent event = new AreaSchematicLoadEvent(Area.this);
             if (!event.call()) return false;
@@ -270,22 +283,20 @@ public class Area {
 
         @Nullable
         public Clipboard getSchematic() {
-            if (isGlobalArea()) return null;
+            if (isGlobalArea() || !getFile().exists()) return null;
             try (ClipboardReader reader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(new FileInputStream(getFile()))) {
                 return reader.read();
             } catch (IOException e) {
                 Logger.error.println(e);
+                return null;
             }
-            return null;
         }
 
         public boolean delete() {
-            if (isGlobalArea()) return false;
-            if (!file.exists()) return true;
-            if (new AreaSchematicDeleteEvent(Area.this).call()) {
-                FileHelper.deleteDirectory(file);
-                return true;
-            } else return false;
+            if (isGlobalArea() || !getFile().exists()) return false;
+            if (!new AreaSchematicDeleteEvent(Area.this).call()) return false;
+            FileHelper.deleteDirectory(file);
+            return true;
         }
     }
 
@@ -307,7 +318,7 @@ public class Area {
     }
 
     public static void saveAreas() {
-        for (Area area : areas()) area.export();
+        areas().forEach(Area::export);
         configuration.save();
     }
 
@@ -369,8 +380,7 @@ public class Area {
     @Nonnull
     public static Area get(@Nonnull World world) {
         Area area = get(world.getName());
-        if (area == null) area = Area.create(world);
-        return area;
+        return area == null ? Area.create(world) : area;
     }
 
     public static boolean exists(@Nonnull String name) {
@@ -397,7 +407,17 @@ public class Area {
         if (!pos2.has("x") || !pos2.has("y") || !pos2.has("z")) throw new NullPointerException("Invalid position (2)");
         BlockVector3 location1 = BlockVector3.at(pos1.get("x").getAsInt(), pos1.get("y").getAsInt(), pos1.get("z").getAsInt());
         BlockVector3 location2 = BlockVector3.at(pos2.get("x").getAsInt(), pos2.get("y").getAsInt(), pos2.get("z").getAsInt());
-        return create(world, location1, location2, name).setPriority(priority);
+        Area created = create(world, location1, location2, name).setPriority(priority);
+        if (!area.has("flags") || !area.get("flags").isJsonObject()) return created;
+        JsonObject flags = area.getAsJsonObject("flags");
+        for (Map.Entry<String, JsonElement> entry : flags.entrySet()) {
+            for (Flag<Object> flag : Flag.values()) {
+                if (!entry.getKey().equals(flag.name())) continue;
+                Object value = flag.possibilities().get(entry.getValue().getAsString());
+                if (value != null) created.setFlag(flag, value);
+            }
+        }
+        return created;
     }
 
     @Nonnull
@@ -423,7 +443,7 @@ public class Area {
     }
 
     @Nonnull
-    public static Area create(@Nonnull World world) {
+    private static Area create(@Nonnull World world) {
         Area area = new Area(world);
         areas.put(area.getName(), area);
         return area;

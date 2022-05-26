@@ -16,7 +16,7 @@ public class Protect extends TNLPlugin {
 
     @Override
     public void enable() {
-        setInstance(this);
+        instance = this;
         getCommandManager().registerCommand(new AreaCommand());
         getEventManager().registerListener(new AreaListener());
         getEventManager().registerListener(new MoveListener());
@@ -25,16 +25,12 @@ public class Protect extends TNLPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("TNLWorlds")) {
             getEventManager().registerListener(new WorldDeleteListener());
         }
-        Area.loadAll();
+        sync(Area::loadAll, 1);
     }
 
     @Override
     public void disable() {
         Area.saveAreas();
-    }
-
-    private static void setInstance(@Nonnull Protect instance) {
-        Protect.instance = instance;
     }
 
     @Nonnull

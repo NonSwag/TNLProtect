@@ -1,6 +1,6 @@
 name: "TNLProtect"
 main: "net.nonswag.tnl.protect.Protect"
-version: "2.0"
+version: "3.0"
 api-version: "1.13"
 author: "NonSwag"
 website: "https://www.thenextlvl.net"

@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 
 public class WorldDeleteListener implements Listener {
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onWorldEvent(@Nonnull WorldDeleteEvent event) {
         if (!Area.get(event.getWorld()).delete(true)) event.setCancelled(true);
     }

@@ -6,19 +6,20 @@
 
     <groupId>net.nonswag.tnl.protect</groupId>
     <artifactId>TNLProtect</artifactId>
-    <version>1.0</version>
-    <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
+    <version>3.0</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 </project>

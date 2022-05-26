@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
@@ -29,9 +30,15 @@ public class EntityListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onEntitySpawn(@Nonnull EntitySpawnEvent event) {
+        Area area = Area.highestArea(event.getEntity().getLocation());
+        if (!area.getFlag(Flag.ENTITY_SPAWN)) event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFoodLevelChange(@Nonnull FoodLevelChangeEvent event) {
         Area area = Area.highestArea(event.getEntity().getLocation());
-        if (event.getItem() != null && !area.getFlag(Flag.HUNGER)) event.setCancelled(true);
+        if (event.getItem() == null && !area.getFlag(Flag.HUNGER)) event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -56,12 +63,12 @@ public class EntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHangingBreak(@Nonnull HangingBreakByEntityEvent event) {
         Area area = Area.highestArea(event.getEntity().getLocation());
-        if (!area.getFlag(Flag.PVE)) event.setCancelled(true);
+        if (!area.getFlag(Flag.HANGING_BREAK)) event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onArmorStandManipulate(@Nonnull PlayerArmorStandManipulateEvent event) {
         Area area = Area.highestArea(event.getRightClicked().getLocation());
-        if (!area.getFlag(Flag.ENTITY_INTERACT).test(event.getPlayer())) event.setCancelled(true);
+        if (!area.getFlag(Flag.ARMOR_STAND_MANIPULATE).test(event.getPlayer())) event.setCancelled(true);
     }
 }
