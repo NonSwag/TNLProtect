@@ -130,7 +130,7 @@ public record Flag<T>(@Nonnull String name, @Nonnull T defaultValue, @Nonnull Po
         public static Possibilities<PlayerBound> PLAYER_BOUND_VALUES = Possibilities.of(
                 new Possibility<PlayerBound>("always", player -> true),
                 new Possibility<PlayerBound>("never", player -> false),
-                new Possibility<>("determine", PlayerBound.DEFAULT)
+                new Possibility<>("automatic", PlayerBound.DEFAULT)
         );
 
         public Possibilities(@Nonnull Map map) {

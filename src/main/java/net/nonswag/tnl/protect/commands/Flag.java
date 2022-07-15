@@ -67,9 +67,7 @@ class Flag extends SubCommand {
         else if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
             var flag = net.nonswag.tnl.protect.api.area.Flag.valueOf(args[2]);
             if (flag != null) suggestions.addAll(flag.possibilities().keySet());
-        } else if (args.length == 4 || (args.length == 5 && args[1].equals("set"))) {
-            suggestions.addAll(Area.userAreaNames());
-        }
+        } else if (args.length == 4 || (args.length == 5 && args[1].equals("set"))) suggestions.addAll(Area.names());
         return suggestions;
     }
 
