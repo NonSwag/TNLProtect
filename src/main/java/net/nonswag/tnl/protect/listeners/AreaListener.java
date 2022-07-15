@@ -1,6 +1,6 @@
 package net.nonswag.tnl.protect.listeners;
 
-import net.nonswag.tnl.protect.api.area.Flag;
+import net.nonswag.tnl.protect.api.flag.Flag;
 import net.nonswag.tnl.protect.api.event.AreaEnterEvent;
 import net.nonswag.tnl.protect.api.event.AreaLeaveEvent;
 import org.bukkit.event.EventHandler;

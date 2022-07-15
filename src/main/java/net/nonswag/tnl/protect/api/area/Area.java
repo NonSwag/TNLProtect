@@ -26,6 +26,7 @@ import net.nonswag.tnl.core.api.message.Placeholder;
 import net.nonswag.tnl.listener.Listener;
 import net.nonswag.tnl.listener.api.player.TNLPlayer;
 import net.nonswag.tnl.protect.api.event.*;
+import net.nonswag.tnl.protect.api.flag.Flag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

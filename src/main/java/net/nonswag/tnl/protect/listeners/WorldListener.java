@@ -2,7 +2,7 @@ package net.nonswag.tnl.protect.listeners;
 
 import net.nonswag.tnl.listener.events.PlayerDamageBlockEvent;
 import net.nonswag.tnl.protect.api.area.Area;
-import net.nonswag.tnl.protect.api.area.Flag;
+import net.nonswag.tnl.protect.api.flag.Flag;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

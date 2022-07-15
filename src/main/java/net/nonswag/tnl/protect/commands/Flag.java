@@ -23,7 +23,7 @@ class Flag extends SubCommand {
         String[] args = invocation.arguments();
         if (args.length >= 2 && args[1].equalsIgnoreCase("set")) {
             Area area = args.length >= 5 ? Area.get(args[4]) : source.isPlayer() ? Area.highestArea((TNLPlayer) source) : null;
-            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.area.Flag.valueOf(args[2]) : null;
+            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.flag.Flag.valueOf(args[2]) : null;
             if (flag != null) {
                 Object value = args.length >= 4 ? flag.possibilities().get(args[3]) : null;
                 if (area != null && value != null && area.setFlag(flag, value)) {
@@ -33,7 +33,7 @@ class Flag extends SubCommand {
             } else source.sendMessage("%prefix% §c/area flag set §8[§6Flag§8] §8[§6Value§8] §8[§6Area§8]");
         } else if (args.length >= 2 && args[1].equalsIgnoreCase("unset")) {
             Area area = args.length >= 4 ? Area.get(args[3]) : source.isPlayer() ? Area.highestArea((TNLPlayer) source) : null;
-            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.area.Flag.valueOf(args[2]) : null;
+            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.flag.Flag.valueOf(args[2]) : null;
             if (flag != null && area != null && area.unsetFlag(flag)) {
                 source.sendMessage("%prefix% §aUnset flag §6" + flag + "§a of the area §6" + area);
             } else if (flag != null && area != null) source.sendMessage("%prefix% §cNothing could be changed");
@@ -41,7 +41,7 @@ class Flag extends SubCommand {
             else source.sendMessage("%prefix% §c/area flag unset §8[§6Flag§8] §8(§6Area§8)");
         } else if (args.length >= 2 && args[1].equalsIgnoreCase("info")) {
             Area area = args.length >= 4 ? Area.get(args[3]) : source.isPlayer() ? Area.highestArea((TNLPlayer) source) : null;
-            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.area.Flag.valueOf(args[2]) : null;
+            var flag = args.length >= 3 ? net.nonswag.tnl.protect.api.flag.Flag.valueOf(args[2]) : null;
             if (flag != null && area != null && area.hasFlag(flag)) {
                 source.sendMessage("%prefix% §7Area§8: §6" + area);
                 source.sendMessage("%prefix% §7Flag§8: §6" + flag);
@@ -63,9 +63,9 @@ class Flag extends SubCommand {
             suggestions.add("set");
             suggestions.add("unset");
             suggestions.add("info");
-        } else if (args.length == 3) suggestions.addAll(net.nonswag.tnl.protect.api.area.Flag.names());
+        } else if (args.length == 3) suggestions.addAll(net.nonswag.tnl.protect.api.flag.Flag.names());
         else if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
-            var flag = net.nonswag.tnl.protect.api.area.Flag.valueOf(args[2]);
+            var flag = net.nonswag.tnl.protect.api.flag.Flag.valueOf(args[2]);
             if (flag != null) suggestions.addAll(flag.possibilities().keySet());
         } else if (args.length == 4 || (args.length == 5 && args[1].equals("set"))) suggestions.addAll(Area.names());
         return suggestions;

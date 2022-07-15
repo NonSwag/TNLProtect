@@ -1,7 +1,7 @@
 package net.nonswag.tnl.protect.listeners;
 
 import net.nonswag.tnl.protect.api.area.Area;
-import net.nonswag.tnl.protect.api.area.Flag;
+import net.nonswag.tnl.protect.api.flag.Flag;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -63,7 +63,8 @@ public class EntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHangingBreak(@Nonnull HangingBreakByEntityEvent event) {
         Area area = Area.highestArea(event.getEntity().getLocation());
-        if (!area.getFlag(Flag.HANGING_BREAK)) event.setCancelled(true);
+        if (event.getRemover() == null || area.getFlag(Flag.HANGING_BREAK).test(event.getRemover())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
