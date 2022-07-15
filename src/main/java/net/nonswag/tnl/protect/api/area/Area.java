@@ -295,7 +295,7 @@ public class Area {
         public boolean delete() {
             if (isGlobalArea() || !getFile().exists()) return false;
             if (!new AreaSchematicDeleteEvent(Area.this).call()) return false;
-            FileHelper.deleteDirectory(file);
+            FileHelper.delete(file);
             return true;
         }
     }
