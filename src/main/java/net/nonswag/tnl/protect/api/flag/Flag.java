@@ -34,6 +34,8 @@ public record Flag<T>(@Nonnull String name, @Nonnull T defaultValue, @Nonnull Po
     @Nonnull
     public static final Flag<PermissionBound> HANGING_BREAK = new Flag<>("hangingBreak", PermissionBound.AUTOMATIC, Possibilities.PERMISSION_BOUND_VALUES);
     @Nonnull
+    public static final Flag<PlayerBound> HANGING_PLACE = new Flag<>("hangingPlace", PlayerBound.AUTOMATIC, Possibilities.PLAYER_BOUND_VALUES);
+    @Nonnull
     public static final Flag<Boolean> ENTITY_SPAWN = new Flag<>("entitySpawn", true, Possibilities.BOOLEAN_VALUES);
     @Nonnull
     public static final Flag<Boolean> REDSTONE = new Flag<>("redstone", true, Possibilities.BOOLEAN_VALUES);

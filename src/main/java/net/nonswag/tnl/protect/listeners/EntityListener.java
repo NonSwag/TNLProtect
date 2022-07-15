@@ -11,6 +11,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
@@ -64,6 +65,14 @@ public class EntityListener implements Listener {
     public void onHangingBreak(@Nonnull HangingBreakByEntityEvent event) {
         Area area = Area.highestArea(event.getEntity().getLocation());
         if (event.getRemover() == null || area.getFlag(Flag.HANGING_BREAK).test(event.getRemover())) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onHangingPlace(@Nonnull HangingPlaceEvent event) {
+        Area area = Area.highestArea(event.getEntity().getLocation());
+        if (event.getPlayer() == null || area.getFlag(Flag.HANGING_PLACE).test(event.getPlayer())) return;
+        event.getPlayer().updateInventory();
         event.setCancelled(true);
     }
 
